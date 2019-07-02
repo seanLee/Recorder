@@ -32,7 +32,7 @@ class AudioRecorder {
     init(_ path: String) {
         destinationPath = path
         print(path)
-        ELAudioSession.shareInstance().category = AVAudioSessionCategoryPlayAndRecord
+        ELAudioSession.shareInstance().category = convertFromAVAudioSessionCategory(AVAudioSession.Category.playAndRecord)
         ELAudioSession.shareInstance().active = true
         ELAudioSession.shareInstance().addRouteChangeListener()
         addAudioSessionInterruptedObserver()
@@ -134,7 +134,7 @@ class AudioRecorder {
         AudioUnitRender(recoder.mixerUnit!, ioActionFlags, inTimeStamp, 0, inNumberFrames, ioData!)
         let result = ExtAudioFileWriteAsync(recoder.finalAudioFile!, inNumberFrames, ioData)
 
-        return result;
+        return result
     }
     
     private func makeNodeConnections() {
@@ -246,16 +246,16 @@ class AudioRecorder {
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(self.onNotificationAudioInterrupted(sender:)),
-                                               name: .AVAudioSessionInterruption,
+                                               name: AVAudioSession.interruptionNotification,
                                                object: AVAudioSession.sharedInstance())
     }
     
     private func removeAudioSessionInterruptedObserver() {
-        NotificationCenter.default.removeObserver(self, name: .AVAudioSessionInterruption, object: nil)
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
     }
     
     @objc private func onNotificationAudioInterrupted(sender: Notification) {
-        if let type = sender.userInfo?[AVAudioSessionInterruptionTypeKey] as? AVAudioSessionInterruptionType {
+        if let type = sender.userInfo?[AVAudioSessionInterruptionTypeKey] as? AVAudioSession.InterruptionType {
             switch type {
             case .began:
                 stop()
@@ -293,4 +293,9 @@ class AudioRecorder {
         
         exit(1)
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromAVAudioSessionCategory(_ input: AVAudioSession.Category) -> String {
+	return input.rawValue
 }
